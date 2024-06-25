@@ -6,13 +6,13 @@ import java.util.List;
 
 public class Directory implements FileSystem {
     private final String name;
-    private final Directory parent;
-    private final List<FileSystem> children;
+    private final Directory p;
+    private final List<FileSystem> c;
 
-    public Directory(String name, Directory parent) {
+    public Directory(String name, Directory p) {
         this.name = trimName(name);
-        this.parent = parent;
-        this.children = new ArrayList<>();
+        this.p = p;
+        this.c = new ArrayList<>();
     }
 
     public Directory(String name) {
@@ -30,53 +30,39 @@ public class Directory implements FileSystem {
 
     @Override
     public String getPath() {
-        return (parent == null) ? "/" + name : parent.getPath() + "/" + name;
+        return (p == null) ? "/" + name : p.getPath() + "/" + name;
     }
 
-    public Directory getParent() {
-        return parent;
-    }
-
-    public String addChild(FileSystem fileSystem) {
-        if (findChildByName(fileSystem.getName()) != null) {
-            return "Error: Directory or file already exists";
-        }
-
-        children.add(fileSystem);
-        return "'" + fileSystem.getName() + "' " + getFileType(fileSystem) + " created";
-    }
-
-    private String getFileType(FileSystem fileSystem) {
-        return (fileSystem instanceof Directory) ? "directory" : "file";
+    public Directory getP() {
+        return p;
     }
 
     public void removeChild(FileSystem fileSystem) {
-        children.remove(fileSystem);
+        c.remove(fileSystem);
     }
 
     public Directory getChildByName(String name) {
         FileSystem child = findChildByName(name);
         return (child instanceof Directory) ? (Directory) child : null;
     }
+    public String addChild(FileSystem fileSystem) {
+        if (findChildByName(fileSystem.getName()) != null) {
+            return "Error: Directory or file already exists";
+        }
+
+        c.add(fileSystem);
+        return "'" + fileSystem.getName() + "' " + getFileType(fileSystem) + " created";
+    }
+
 
     public FileSystem findChildByName(String name) {
-        for (FileSystem child : children) {
+        for (FileSystem child : c) {
             if (child.getName().equals(name)) {
                 return child;
             }
         }
         return null;
     }
-
-    public List<String> listItems(String order) {
-        List<String> items = new ArrayList<>();
-        for (FileSystem child : children) {
-            items.add(child.getName());
-        }
-        sortItems(items, order);
-        return items;
-    }
-
     private void sortItems(List<String> items, String order) {
         if (order != null) {
             switch (order) {
@@ -92,8 +78,21 @@ public class Directory implements FileSystem {
         }
     }
 
+    private String getFileType(FileSystem fileSystem) {
+        return (fileSystem instanceof Directory) ? "directory" : "file";
+    }
+
+    public List<String> listItems(String order) {
+        List<String> items = new ArrayList<>();
+        for (FileSystem child : c) {
+            items.add(child.getName());
+        }
+        sortItems(items, order);
+        return items;
+    }
+
     public Directory findDirectoryByName(String name) {
-        for (FileSystem child : children) {
+        for (FileSystem child : c) {
             if (child instanceof Directory && child.getName().equals(name)) {
                 return (Directory) child;
             }

@@ -1,58 +1,48 @@
 package edu.austral.ingsis.clifford;
-
 import java.util.*;
 
 public class CLI {
-    private Directory currentDirectory;
+    private Directory cD;
     private final Map<String, Command> commands;
 
-    public CLI(Directory rootDirectory) {
-        this.currentDirectory = rootDirectory;
-        this.commands = initializeCommands(rootDirectory);
-    }
-
-    private Map<String, Command> initializeCommands(Directory directory) {
-        Map<String, Command> commandMap = new HashMap<>();
-        commandMap.put("ls", new Ls(directory));
-        commandMap.put("mkdir", new Mkdir(directory));
-        commandMap.put("cd", new Cd(directory, directory));
-        commandMap.put("pwd", new Pwd(directory));
-        commandMap.put("touch", new Touch(directory));
-        commandMap.put("rm", new Rm(directory));
-        return commandMap;
-    }
-
-    public List<String> executeCommands(List<String> commands) {
-        List<String> results = new ArrayList<>();
-        for (String command : commands) {
-            results.add(executeCommand(command));
-        }
-        return results;
+    public CLI(Directory root) {
+        this.cD = root;
+        this.commands = new HashMap<>();
+        this.commands.put("ls", new Ls(cD));
+        this.commands.put("mkdir", new Mkdir(cD));
+        this.commands.put("cd", new Cd(cD, root));
+        this.commands.put("pwd", new Pwd(cD));
+        this.commands.put("touch", new Touch(cD));
+        this.commands.put("rm", new Rm(cD));
     }
 
     private String executeCommand(String command) {
-        String[] parts = command.split("\\s+");
-        String cmd = parts[0];
-        String[] args = Arrays.copyOfRange(parts, 1, parts.length);
+        String[] comSpl = command.split("\\s+");
+        String cmd = comSpl[0];
+        String[] arguments = Arrays.copyOfRange(comSpl, 1, comSpl.length);
 
-        Command commandToExecute = commands.get(cmd);
-        if (commandToExecute != null) {
-            String result = commandToExecute.execute(args);
-            if (commandToExecute instanceof Cd) {
-                updateCurrentDirectory();
+        Command exec = commands.get(cmd);
+        if (exec != null) {
+            String res = exec.execute(arguments);
+            if (exec instanceof Cd) {
+                cD = Cd.getcD();
+                commands.replace("ls", new Ls(cD));
+                commands.replace("mkdir", new Mkdir(cD));
+                commands.replace("pwd", new Pwd(cD));
+                commands.replace("touch", new Touch(cD));
+                commands.replace("rm", new Rm(cD));
             }
-            return result;
+            return res;
         } else {
             return "Unknown command";
         }
     }
-
-    private void updateCurrentDirectory() {
-        currentDirectory = Cd.getCurrentDirectory();
-        commands.replace("ls", new Ls(currentDirectory));
-        commands.replace("mkdir", new Mkdir(currentDirectory));
-        commands.replace("pwd", new Pwd(currentDirectory));
-        commands.replace("touch", new Touch(currentDirectory));
-        commands.replace("rm", new Rm(currentDirectory));
+    public List<String> executeCommands(List<String> commands) {
+        List<String> res = new ArrayList<>();
+        for (String command : commands) {
+            String added = executeCommand(command);
+            res.add(added);
+        }
+        return res;
     }
 }
