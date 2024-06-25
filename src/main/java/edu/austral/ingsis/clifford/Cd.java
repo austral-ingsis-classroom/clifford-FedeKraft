@@ -26,9 +26,9 @@ public class Cd implements Command {
             }
         }
 
-        if (dirName.contains("/")) {
+        if (!dirName.startsWith("/")) {
             String[] path = dirName.split("/");
-            Directory child = rD;
+            Directory child = cD;
             for (String part : path) {
                 Directory nextChild = child.findDirectoryByName(part);
                 if (nextChild == null) {

@@ -30,9 +30,17 @@ public class Directory implements FileSystem {
 
     @Override
     public String getPath() {
-        return (p == null) ? "/" + name : p.getPath() + "/" + name;
+        if (p == null) {
+            return "/";
+        } else {
+            String parentPath = p.getPath();
+            if (parentPath.equals("/")) {
+                return parentPath + name;
+            } else {
+                return parentPath + name;
+            }
+        }
     }
-
     public Directory getP() {
         return p;
     }
